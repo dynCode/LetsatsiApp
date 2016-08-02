@@ -1,0 +1,41 @@
+<ons-page>
+    <ons-toolbar>
+        <div class="left">
+            <ons-back-button>Back</ons-back-button>
+        </div>
+        <div class="center">Contact us</div>
+        <div class="right">
+            <ons-toolbar-button ng-click="menu.toggle()">
+                <ons-icon icon="ion-navicon" size="28px" fixed-width="false"></ons-icon>
+            </ons-toolbar-button>
+        </div>
+    </ons-toolbar>
+    <div class="topBanner">
+        <div class="subImgBlock">
+            <img src="images/sub_header.png" style="max-width: 380px; width: 100%;" />
+        </div>
+    </div>
+    <h2 class="myHeader"><span>CONTACT US</span></h2>
+    <div style="padding: 0 20px 10px 20px;">
+        <div ng-bind-html="cuPage"></div>
+    </div>
+    
+    <ons-list class="dropShadow">
+        <ons-list-item modifier="chevron" onclick="myNavigator.pushPage('views/enquiery.html', { animation : 'slide' } )">
+            ENQUIRE NOW
+        </ons-list-item>
+        <ons-list-item modifier="chevron" ng-click="loadpage(5)">
+            BRANCHES
+        </ons-list-item>
+    </ons-list>
+    <!--
+    <ons-list>
+        <ons-list-item modifier="chevron" onclick="window.open('https://www.facebook.com/mahalaloyalty','_system','')">
+            FACEBOOK
+        </ons-list-item>
+        <ons-list-item modifier="chevron" onclick="window.open('https://twitter.com/mahala_loyalty','_system','')">
+            TWITTER
+        </ons-list-item>
+    </ons-list>
+    -->
+</ons-page>
