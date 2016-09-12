@@ -2,7 +2,7 @@
 (function(){
     'use strict';
     
-    var module = angular.module('app', ['onsen', 'ngMap', 'ngSanitize']);
+    var module = angular.module('app', ['onsen', 'ngMap', 'ngSanitize', 'ngFileUpload']);
     
     // angular data filters
     module.filter('externalLinks', function() {
@@ -24,7 +24,7 @@
         };
     }]);
     
-    module.controller('AppController', function($scope, $http, $window) {
+    module.controller('AppController', function($scope, $http, $window, $timeout, Upload) {
         //API URL path
         var apiPath = 'http://letsatsilifestyle.co.za/app/api';
         
@@ -58,6 +58,8 @@
         $scope.loggedIn = false;
         
         //Partner Data
+        $scope.partner_id = '';
+        $scope.partner_name = '';
         $scope.partner_logo = '';
         $scope.partner_voucher = '';
         $scope.partner_tel = '';
@@ -516,6 +518,8 @@
                 var month = ("0" + (now.getMonth() + 1)).slice(-2);
                 var today = now.getFullYear() + "-" + (month) + "-" + (day);
                 
+                $scope.partner_id = partnerId;
+                $scope.partner_name = data[0]['partner_name'];
                 $scope.partner_logo = data[0]['partner_logo'];
                 $scope.partner_voucher = data[0]['partner_voucher'];
                 $scope.partner_tel = data[0]['partner_tel'];
@@ -529,7 +533,7 @@
             });
             
             
-            myNavigator.pushPage('views/user/voucher.html', { animation : 'fade', partnerId : partnerId });
+            myNavigator.pushPage('views/user/voucher_points.html', { animation : 'fade', partnerId : partnerId });
         };
         
         // buile discount name dropdown
@@ -681,6 +685,8 @@
                 var month = ("0" + (now.getMonth() + 1)).slice(-2);
                 var today = now.getFullYear() + "-" + (month) + "-" + (day);
                 
+                $scope.partner_id = partnerId;
+                $scope.partner_name = data[0]['partner_name'];
                 $scope.partner_logo = data[0]['partner_logo'];
                 $scope.partner_voucher = data[0]['partner_voucher'];
                 $scope.partner_tel = data[0]['partner_tel'];
@@ -694,7 +700,7 @@
             });
             
             
-            myNavigator.pushPage('views/user/voucher.html', { animation : 'fade', partnerId : partnerId });
+            myNavigator.pushPage('views/user/voucher_discount.html', { animation : 'fade', partnerId : partnerId });
         };
         
         // log out function
@@ -904,11 +910,19 @@
                 var month = ("0" + (now.getMonth() + 1)).slice(-2);
                 var today = now.getFullYear() + "-" + (month) + "-" + (day);
                 
+                $scope.partner_id = partnerId;
+                $scope.partner_name = data[0]['partner_name'];
                 $scope.partner_logo = data[0]['partner_logo'];
                 $scope.partner_voucher = data[0]['partner_voucher'];
                 $scope.partner_tel = data[0]['partner_tel'];
                 $scope.partner_address = data[0]['partner_address'];
                 $scope.voucher_date = today;
+                
+                if (partnerType === 'Points') {
+                    $scope.conImages = 'http://www.mahala.mobi/components/com_jumi/files/mahala_WSDL/partnerLogo.png';
+                } else {
+                    $scope.conImages = 'http://www.mahala.mobi/components/com_jumi/files/mahala_WSDL/partnerDisLogo.png';
+                }
             })
             .error(function(data, status) {
                 modal.hide();
@@ -916,8 +930,11 @@
                 modal.show();
             });
             
-            
-            myNavigator.pushPage('views/user/voucher.html', { animation : 'fade', partnerId : partnerId });
+            if (partnerType === 'Points') {
+                myNavigator.pushPage('views/user/voucher_points.html', { animation : 'fade', partnerId : partnerId });
+            } else {
+                myNavigator.pushPage('views/user/voucher_discount.html', { animation : 'fade', partnerId : partnerId });
+            }
         };
         
         $scope.showCoupon = function(couponId) {
@@ -1020,6 +1037,100 @@
                 modal.hide();
                 $scope.data.errorCode = 'Request failed';
                 modal.show();
+            });
+        };
+        
+        //cliam Points
+        $scope.claimPoints = function(file) {
+            
+            modal.show();
+            $scope.data.errorCode = 'Processing, please wait...';
+            
+            file.upload = Upload.upload({
+                url: 'http://www.mahala.mobi/mobiTest/api/uploadPoints.php',
+                method: 'POST',
+                file: file,
+                data: {
+                    'reqType': "claimPoints", 
+                    'transVal': $scope.data.pointsTransVal, 
+                    'transInv': $scope.data.pointsTransInv,
+                    'partName': $scope.partner_name,
+                    'partId': $scope.partner_id,
+                    'mpacc': $scope.MPacc,
+                    'cardNum': $scope.CardNumber
+                }
+            });
+            
+            // returns a promise
+            file.upload.then(function(resp) {
+                // file is uploaded successfully
+                console.log('file ' + resp.config.data.file.name + ' is uploaded successfully. Response: ' + resp.data);
+                modal.hide();
+                $scope.data.errorCode = "Thank you!";
+                modal.show();
+                $timeout(function(){
+                    modal.hide();
+                    $scope.data = [];
+                    myNavigator.pushPage('views/user/welcome.html', { animation : 'fade'});
+                },'2000');
+            }, function(resp) {
+                if (resp.status > 0) {
+                    modal.hide();
+                    $scope.data.result = resp.status + ': ' + resp.data;
+                    $scope.data.errorCode = resp.status + ': ' + resp.data;
+                    modal.show();
+                }            
+            }, function(evt) {
+                // progress notify
+                console.log('progress: ' + parseInt(100.0 * evt.loaded / evt.total) + '% file :'+ evt.config.data.file.name);
+                $scope.data.errorCode = 'progress: ' + parseInt(100.0 * evt.loaded / evt.total) + '%';
+            });
+        };
+        
+        //cliam Discount
+        $scope.claimDiscount = function(file) {
+            
+            modal.show();
+            $scope.data.errorCode = 'Processing, please wait...';
+            
+            file.upload = Upload.upload({
+                url: 'http://www.mahala.mobi/mobiTest/api/uploadDiscount.php',
+                method: 'POST',
+                file: file,
+                data: {
+                    'reqType': "claimDiscount", 
+                    'transVal': $scope.data.pointsTransVal, 
+                    'transInv': $scope.data.pointsTransInv,
+                    'partName': $scope.partner_name,
+                    'partId': $scope.partner_id,
+                    'mpacc': $scope.MPacc,
+                    'cardNum': $scope.CardNumber
+                }
+            });
+            
+            // returns a promise
+            file.upload.then(function(resp) {
+                // file is uploaded successfully
+                console.log('file ' + resp.config.data.file.name + ' is uploaded successfully. Response: ' + resp.data);
+                modal.hide();
+                $scope.data.errorCode = "Thank you!";
+                modal.show();
+                $timeout(function(){
+                    modal.hide();
+                    $scope.data = [];
+                    myNavigator.pushPage('views/user/welcome.html', { animation : 'fade'});
+                },'2000');
+            }, function(resp) {
+                if (resp.status > 0) {
+                    modal.hide();
+                    $scope.data.result = resp.status + ': ' + resp.data;
+                    $scope.data.errorCode = resp.status + ': ' + resp.data;
+                    modal.show();
+                }            
+            }, function(evt) {
+                // progress notify
+                console.log('progress: ' + parseInt(100.0 * evt.loaded / evt.total) + '% file :'+ evt.config.data.file.name);
+                $scope.data.errorCode = 'progress: ' + parseInt(100.0 * evt.loaded / evt.total) + '%';
             });
         };
     });
