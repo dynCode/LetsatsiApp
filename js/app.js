@@ -25,7 +25,7 @@
     }]);
     
     module.controller('AppController', function($scope, $http, $window, $timeout, Upload) {
-        $scope.apiPath = 'http://letsatsilifestyle.co.za/api/';
+        $scope.apiPath = 'http://letsatsilifestyle.co.za/NewApp/api/';
         $scope.data = [];
         //points partners name dropdown
         $scope.pointsDD = [];
@@ -82,6 +82,7 @@
         $scope.commun = '';
         $scope.tokenBalance = '';
         $scope.totalDiscount = '';
+		$scope.virtualCard = '';
         
         //Partner Data
         $scope.partner_id = '';
@@ -309,6 +310,7 @@
                         $scope.commun = data['commun'];
                         $scope.tokenBalance = data['tokenBalance'];
                         $scope.totalDiscount = data['totalDiscount'];
+						$scope.virtualCard = data['virtualCard'];
                     } 
                 })
                 .error(function(data, status) {
@@ -420,6 +422,7 @@
                         $scope.commun = data['commun'];
                         $scope.tokenBalance = data['tokenBalance'];
                         $scope.totalDiscount = data['totalDiscount'];
+						$scope.virtualCard = data['virtualCard'];
                         
                         modal.show();
                         $scope.data.errorCode = 'Collecting your data...';
